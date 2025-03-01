@@ -1,21 +1,44 @@
 plugins {
-    val kotlinVersion = "1.4.30"
+    val kotlinVersion = "1.8.0"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
-    id("net.mamoe.mirai-console") version "2.9.2"
+
+    id("com.github.gmazzo.buildconfig") version "3.1.0"
+    id("net.mamoe.mirai-console") version "2.16.0"
 }
 
 group = "com.billyang"
 version = "1.3.2"
 
 repositories {
-    maven("https://maven.aliyun.com/repository/public")
-    jcenter()
+    if (System.getenv("CI")?.toBoolean() != true) {
+        maven("https://maven.aliyun.com/repository/public") // 阿里云国内代理仓库
+    }
     mavenCentral()
-    mavenLocal()
 }
-dependencies{
-    //在IDE内运行的mcl添加滑块模块，请参考https://github.com/project-mirai/mirai-login-solver-selenium把版本更新为最新
-    //runtimeOnly("net.mamoe:mirai-login-solver-selenium:1.0-dev-15")
+
+buildConfig {
+    className("BuildConstants")
+    packageName("org.example.mirai.plugin")
+    useKotlinOutput()
+
+    buildConfigField("String", "VERSION", "\"${project.version}\"")
+}
+
+mirai {
+    noTestCore = true
+    setupConsoleTestRuntime {
+        // 移除 mirai-core 依赖
+        classpath = classpath.filter {
+            !it.nameWithoutExtension.startsWith("mirai-core-jvm")
+        }
+    }
+}
+
+dependencies {
+
+    val overflowVersion = "1.0.3"
+    compileOnly("top.mrxiaom.mirai:overflow-core-api:$overflowVersion")
+    testConsoleRuntime("top.mrxiaom.mirai:overflow-core:$overflowVersion")
     implementation(fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
 }
