@@ -382,8 +382,9 @@ public class DatabaseAutoArranger extends TimerTask {
             start = mt.start();
             end = mt.end();
 
-            String imageId = ImageParser.MiraiCode2Id(text.substring(start, end));
-            File file = new File(EntryLib.IMAGES_FOLDER, imageId);
+            // 拿路径
+            String imageId = ImageParser.File2Id(text.substring(start, end));
+            File file = new File(imageId);
 
             if(file.exists())list.add(file);
         }
